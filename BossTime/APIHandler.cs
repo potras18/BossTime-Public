@@ -31,6 +31,7 @@ namespace BossTime
       
         }
 
+        // Gets the current boss minute from the database or cache
         public int GetBossMinute(bool force=false)
         {
             FileInfo fi = new FileInfo(JsonFilePath);
@@ -70,9 +71,9 @@ namespace BossTime
 
         }
 
-        
-       
 
+
+        // Gets the list of maps with bosses and their spawn times
         private List<Map> MapList()
         {
             List<Map> maps = new List<Map>();
@@ -112,6 +113,7 @@ namespace BossTime
             return maps;
         }
 
+        // Gets the full API data, including boss minute and map list, from cache or database
         public ServerData ApiData(bool force=false)
         {
             FileInfo fi = new FileInfo(JsonFilePath);
@@ -156,8 +158,9 @@ namespace BossTime
             return new ServerData();
         }
 
-    } 
+    }
 
+    // Data structure for the API response
     public class ServerData
     {
         public int BossMinute { get; set; } = 0;

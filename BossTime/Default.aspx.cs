@@ -68,8 +68,9 @@ namespace BossTime
             ScriptManager.RegisterStartupScript(upMain, typeof(string), "StartServerTime", $"StartTimer({utcoffset});", true);
             try
             {
+                //Various API handlers to allow external querying of boss times, useful for integrations with IoT devices or other apps
+                // Example: /Default.aspx?boss=valento  or /Default.aspx?until=valento or /Default.aspx?bosstime=valento or /Default.aspx?bosshour=1
 
-               
                 string boss = Request.QueryString["boss"];
                 if (!string.IsNullOrEmpty(boss))
                 {
@@ -156,7 +157,7 @@ namespace BossTime
         int HighBoss = 120;
 
 
-
+        // Handles level selection and cookie storage for level range
         private void DoLevelSelection()
         {
             try
@@ -218,7 +219,7 @@ namespace BossTime
             }
         }
 
-
+        // API handler to get time until boss spawn or exact spawn time
         private void GetBossTimeAPI(string boss, int realtime = 0)
         {
             List<TimeSlot> timeslots = bossTimes.ToList().Where((x) => new TimeSpan(x.Hour, x.Minute, 0) > DateTime.UtcNow.AddHours(utcoffset).TimeOfDay).ToList();
@@ -275,7 +276,7 @@ namespace BossTime
             Response.Write($"-1");
             Response.End();
         }
-
+        // Get UTC offset from file, defaults to 0 if not found, not yet implemented due to JavaScript handling
         private int GetOffset()
         {
             string filepath = Server.MapPath("Resources/utcoffset.dat");
@@ -293,6 +294,7 @@ namespace BossTime
             }
         }
 
+        // Check current hour and minute to determine next boss spawn
         private string CheckHour(bool special = true,bool extime = false)
         {
                 
@@ -329,7 +331,7 @@ namespace BossTime
         }
 
 
-
+        // Get list of bosses for the hour, with special handling for Fury and Deius bosses
         private string GetBossList(int hour, bool specialb = true, bool extime = false, bool specialonly = false)
         {
             TimeSlot ts = bossTimes[hour];
@@ -387,7 +389,7 @@ namespace BossTime
             return ret;
         }
 
-
+        // Generate default boss list and save to file, currently commented out as boss data is pulled from API, Legacy function, No longer used when connecting via SQL
         private void GenerateDefault(string path)
         {
             //StartBoss = new List<Boss>() {
@@ -424,7 +426,7 @@ namespace BossTime
             //}
         }
 
-
+        // Populate the main DataList with bosses based on level range
         public void PopulateBosses(int min=0, int max=120)
         {
 
@@ -445,6 +447,7 @@ namespace BossTime
 
         }
 
+        // Get list of arena bosses for API or display
         private string GetArena()
         {
 
@@ -493,6 +496,7 @@ namespace BossTime
             return ret;
         }
 
+        // Get list of normal bosses for API or display
         private string GetNormal()
         {
 
@@ -548,7 +552,7 @@ namespace BossTime
 
             return ret;
         }
-
+        // Generate the list of bosses and their visibility based on level range and current time
         private void GenerateList(int min=0, int max=120)
         {
             
@@ -617,26 +621,33 @@ namespace BossTime
             tbBLow.Attributes.Add("min", lowest.ToString());
         }
 
+        // Handle search button click to filter bosses by level range, No longer used as level selection is done via cookies
         protected void btnSearch_Click(object sender, EventArgs e)
         {
             GenerateList(Convert.ToInt32(tbBHigh.Text), Convert.ToInt32(tbBHigh.Text));
         }
 
+        // Handle DataList item selection to focus on the selected hour
         protected void dlMain_SelectedIndexChanged(object sender, EventArgs e)
         {
             Label lbl =  dlMain.SelectedItem.FindControl("lblHour") as Label;
             lbl.Focus();
         }
 
+        // Placeholder for logo click event, currently does nothing
         protected void imgLogo_Click(object sender, ImageClickEventArgs e)
         {
             
         }
+
+        // Calculate interval for timer tick to align with the start of the next minute
         static int GetInterval()
         {
             DateTime now = DateTime.Now;
             return ((60 - now.Second) * 1000 - now.Millisecond);
         }
+
+        // Timer tick event to check for upcoming boss spawns and trigger audio notifications
         protected void tmrMain_Tick(object sender, EventArgs e)
         {
             tmrMain.Interval = GetInterval();
@@ -644,6 +655,7 @@ namespace BossTime
 
             if(ts.Minutes == 55) 
             {
+                
                 //playAudio(\"resources/fury_5.mp3\");
                 string arenaboss = GetArena();
                 string arenastring = $"{arenaboss.Replace("(","").Replace(")","")} will spawn in 5 Minutes";
@@ -661,6 +673,7 @@ namespace BossTime
         }
     }
 
+    // Classes to represent server data, maps, time slots, and bosses
     public class TimeSlot
     {
         public int Hour { get; set; }
@@ -672,6 +685,7 @@ namespace BossTime
         public bool isVisible = false;
     }
 
+    
     public class Boss
     {
         public string ImgUrl { get; set; }
