@@ -1,0 +1,280 @@
+﻿body {
+    background-color: transparent;
+    font-family: Verdana;
+    background-image: url('/images/bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-blend-mode:luminosity;
+    background-attachment:fixed;
+    -webkit-touch-callout: none;
+
+}
+
+* {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+:root {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+td{
+    text-align:center;
+    padding:0px;
+}
+
+tr{
+    text-align:center;
+    padding:0px;
+
+}
+
+.ctls{
+    display:none;
+}
+
+
+
+.bImg {
+    margin: 3.5px;
+    height: 58px;
+    width: 58px;
+    object-fit: contain;
+    background-color: black;
+    clip-path: circle(40%);
+    overflow: hidden;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none; 
+    
+}
+
+.bossMain{
+    width:calc(100% - 300px);
+}
+
+.bossP {
+    position:relative;
+    background-color: rgb(255, 216, 0,0.5);
+    height: 65px;
+    width: 65px;
+    clip-path: circle(39%);
+    left:50%;
+    transform:translateX(-50%);
+}
+
+
+
+
+
+.bossCard {
+    margin:5px;
+    width: 200px !important;
+    height: 150px !important;
+    background-color: rgba(0,0,0,0.5);
+    overflow: hidden;
+    color: white;
+    align-content: center;
+    text-align: center;
+    border-radius:5px;
+    box-shadow: 0px 0px 3px 0px grey;
+    float:left;
+}
+
+.wide{
+    width:400px!important;
+}
+
+.front {
+    z-index: 999999;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    background-color: rgba(0,0,0,0.9);
+}
+
+.bossR{
+    margin:10px;
+    margin-bottom:50px;
+
+}
+
+.tblBoss{
+    width:100%;
+    height:100%;
+    font-size:small;
+    padding:5px;
+    
+  
+}
+
+.bossHead{
+    font-size:medium;
+    font-weight:900;
+}
+
+.hrc{
+    background-color:grey;
+    opacity:0.5;
+}
+
+.bossContainer{
+    display:inline-block;
+}
+
+
+.sTime {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    font-size: medium;
+    color: white;
+    text-align: right;
+    background-color: rgba(0,0,0,0.5);
+    text-transform:uppercase;
+    overflow: hidden;
+    color: white;
+    border-radius: 5px;
+    box-shadow: 0px 0px 3px 0px grey;
+    padding:40px;
+    z-index:9999999999999;
+}
+
+.tbLSel {
+    font-size: medium;
+    color: white;
+    background-color: rgba(0,0,0,0.5);
+    text-transform: uppercase;
+    overflow: hidden;
+    border-radius: 5px;
+    box-shadow: 0px 0px 3px 0px grey;
+    margin:5px;
+    outline:none;
+    text-align:center;
+}
+
+.ptLogo{
+    position:fixed;
+    right:5px;
+    top:10px;
+    z-index:99999999;
+    object-fit:contain;
+    width:250px;
+}
+
+.btnClose {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    box-shadow: 0px 0px 10px rgba(255,0,0,1) inset, 0px 0px 10px rgba(255,0,0,0.5);
+    background-color:black;
+    color:white;
+    border:none;
+    font-family:Verdana;
+}
+
+
+
+.TimeHeader {
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    width: 150px;
+    height: 150px !important;
+    border-radius: 5px;
+}
+
+    .TimeHeader {
+        
+        box-shadow: 0px 0px 3px 0px grey;
+        column-gap:20px;
+    }
+
+.TimeSel {
+    animation: Active 0.5s alternate infinite;
+    transition: box-shadow 0.25s;
+   
+}
+
+.TimeSelExp {
+    content: 'SPAWNED';
+    animation: Missed 0.5s alternate infinite;
+    transition: box-shadow 0.25s;
+}
+
+@keyframes Active{
+    from {
+        box-shadow: 0px 0px 10px rgba(0,255,0,0.25) inset;
+        
+    }
+    to {
+        box-shadow: 0px 0px 100px rgba(0,255,0,0.25) inset;
+        
+    }
+}
+
+@keyframes Missed {
+    from {
+        box-shadow: 0px 0px 10px rgba(255,0,0,0.25) inset;
+    }
+
+    to {
+        box-shadow: 0px 0px 100px rgba(255,0,0,1) inset;
+    }
+}
+
+
+
+/* width */
+::-webkit-scrollbar {
+    width: 20px;
+    background-color:rgba(0,0,0,0.25);
+    opacity:0.5;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.25);
+    border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+}
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgb(255, 216, 0,0.5);
+    }
+
+
+.ddl {
+    border: 2px solid #7d6754;
+    border-radius: 5px;
+    padding: 3px;
+    -webkit-appearance: none;
+    background-image: url('Images/Arrowhead-Down-01.png');
+    background-position: 88px;
+    background-repeat: no-repeat;
+    text-indent: 0.01px; /*In Firefox*/
+    text-overflow: ''; /*In Firefox*/
+    width:300px!important;
+}
+
+
+
+
+
