@@ -41,6 +41,25 @@ tr{
     display:none;
 }
 
+.Hidden{
+    display:none;
+}
+
+.UIShroud {
+    position: absolute;
+    left: 0%;
+    right: 0%;
+    top: 0%;
+    bottom: 0%;
+    background-color: rgba(0,0,0,0.9);
+    z-index: 99999999999999;
+}
+
+.SuperFront {
+    z-index: 999999999999999;
+}
+
+
 
 
 .bImg {
@@ -151,6 +170,25 @@ tr{
     z-index:9999999999999;
 }
 
+.RegBox {
+    left:50%;
+    top: 50%;
+
+    transform:translate(-50%,-50%);
+    position: absolute;
+    font-size: medium;
+    color: white;
+    text-align: center;
+    background-color: rgba(0,0,0,0.5);
+    text-transform: uppercase;
+    overflow: hidden;
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 3px 0px grey;
+    padding: 40px;
+    z-index: 9999999999999;
+}
+
 .tbLSel {
     font-size: medium;
     color: white;
@@ -163,6 +201,40 @@ tr{
     outline:none;
     text-align:center;
 }
+
+.tbReg {
+    font-size: medium;
+    color: white;
+    background-color: rgba(0,0,0,0.5);
+    overflow: hidden;
+    border-radius: 5px;
+    box-shadow: 0px 0px 3px 0px grey;
+    margin: 5px;
+    outline: none;
+    text-align: center;
+}
+
+.btnReg {
+    font-size: medium;
+    color: white;
+    background-color: rgba(0,0,0,0.5);
+    text-transform: uppercase;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0px 0px 3px 0px #181A60;
+    margin: 5px;
+    outline: none;
+    text-align: center;
+    width: 200px;
+    height: 50px;
+    transition: box-shadow 0.2s linear;
+}
+
+    .btnReg:hover {
+        box-shadow: 0px 0px 20px 0px #181A60;
+        transition: box-shadow 0.2s linear;
+        cursor: pointer;
+    }
 
 .ptLogo{
     position:fixed;

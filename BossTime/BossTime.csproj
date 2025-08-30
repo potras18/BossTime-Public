@@ -96,9 +96,11 @@
     <Content Include="images\vengeful.png" />
     <Content Include="images\window.png" />
     <Content Include="images\Yagditha.png" />
+    <Content Include="Register.aspx" />
     <Content Include="Resources\BossTemplate.html" />
     <Content Include="Resources\boss_5.mp3" />
     <Content Include="Resources\fury_5.mp3" />
+    <Content Include="Scripts\Register.js" />
     <Content Include="Scripts\Synth.js" />
     <Content Include="Scripts\Main.js" />
     <Content Include="Scripts\Notifications.js" />
@@ -107,7 +109,8 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="APIHandler.cs" />
+    <Compile Include="Classes\APIHandler.cs" />
+    <Compile Include="Classes\SystemVariables.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -116,6 +119,13 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Register.aspx.cs">
+      <DependentUpon>Register.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Register.aspx.designer.cs">
+      <DependentUpon>Register.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Template.aspx.cs">
       <DependentUpon>Template.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
