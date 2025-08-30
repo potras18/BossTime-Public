@@ -37,6 +37,7 @@ namespace BossTime
         public static int MaxEmailLength = 64;
         public static string AllowedUsernameChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         public static string AllowedPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:',.<>?/`~\"\\";
+        public static int NewAccountStartingCoins = 0;
 
     }
 

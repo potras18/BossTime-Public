@@ -290,12 +290,13 @@ namespace BossTime
                     ds.InsertParameters.Add("email", email);
                     ds.InsertParameters.Add("pass", finalpass);
                     ds.InsertParameters.Add("dbdate", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
+                    ds.InsertParameters.Add("coins", RegisterVariables.NewAccountStartingCoins.ToString());
 
 
 
 
 
-                    ds.InsertCommand = "INSERT INTO UserInfo (AccountName, Password, Email, RegisDay, Active,Coins,GameMasterType,GameMasterLevel,GameMasterMacAddress,CoinsTraded,BanStatus,IsMuted,MuteCount,ActiveCode) VALUES (@acc, @pass, @email, @dbdate,1,0,0,0,'',0,0,0,0,1);";
+                    ds.InsertCommand = "INSERT INTO UserInfo (AccountName, Password, Email, RegisDay, Active,Coins,GameMasterType,GameMasterLevel,GameMasterMacAddress,CoinsTraded,BanStatus,IsMuted,MuteCount,ActiveCode) VALUES (@acc, @pass, @email, @dbdate,1,@coins,0,0,'',0,0,0,0,1);";
                     ds.Inserted += new SqlDataSourceStatusEventHandler((snd, e) => {
 
                        foreach(DbParameter pr in e.Command.Parameters)
