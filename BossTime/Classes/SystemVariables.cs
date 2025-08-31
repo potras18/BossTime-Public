@@ -17,8 +17,8 @@ namespace BossTime
     public static class DBCredentials
     {
 
-        public static string dbID = "YOURDATABASEUSERNAME";
-        public static string dbPass = "YOURDATABASEPASSWORD";
+        public static string dbID = "YOUR SQL USER ID";
+        public static string dbPass = "YOUR SQL PASSWORD";
         public static string server = "SERVER\\SQLEXPRESS";
 
         
@@ -58,13 +58,11 @@ namespace BossTime
     public static class StripeData
     {
         // Set your Stripe API key here. Be sure to use the secret key, not the publishable key.
-        public static string Stripe_API_Key = "YOURSTRIPEAPIKEY";
+        public static string Stripe_API_Key = "YOUR STRIPE API KEY";
 
         //Set your redirect URL for stripe to use after the transaction is complete
         public static string Stripe_RedirectURL = "https://YOURURL/UserPanel.aspx";
 
-        // Change this to your desired currency code (e.g., "usd", "eur", etc.)
-        public static string Stripe_Currency = "gbp";
 
     }
 
@@ -92,5 +90,6 @@ namespace BossTime
         public static int NewAccountStartingCoins = 0;
 
     }
+
 
 }

@@ -15,6 +15,15 @@ namespace BossTime
     {
 
         /// <summary>
+        /// upMain control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upMain;
+
+        /// <summary>
         /// form1 control.
         /// </summary>
         /// <remarks>
@@ -51,13 +60,13 @@ namespace BossTime
         protected global::System.Web.UI.WebControls.LinkButton lbLogout;
 
         /// <summary>
-        /// btnDonate10 control.
+        /// dvPackages control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnDonate10;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl dvPackages;
 
         /// <summary>
         /// hdStatus control.

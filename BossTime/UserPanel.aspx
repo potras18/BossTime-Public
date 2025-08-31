@@ -10,6 +10,9 @@
     <title>Priston Tale - Account Registration</title>
 </head>
 <body>
+    <asp:ScriptManager runat="server"></asp:ScriptManager>
+    <asp:UpdatePanel runat="server" ID="upMain">
+        <ContentTemplate>
     <form id="form1" runat="server">
         <asp:Image runat="server" CssClass="ptLogo" ID="imgLogo" draggable="false" OnClick="imgLogo_Click" ImageUrl="~/images/logo_pt.png" />
         <div class="RegBox">
@@ -17,7 +20,9 @@
             <asp:LinkButton Text="Logout" runat="server" ID="lbLogout" OnClick="lbLogout_Click"  />
             <br />
 
-            <asp:Button runat="server" Text="Donate 10" ID="btnDonate10" OnClick="btnDonate10_Click" CssClass="btnReg" />
+            <div runat="server" id="dvPackages">
+
+            </div>
 
         </div>
 
@@ -32,5 +37,7 @@
             </div>
         </div>
     </form>
+            </ContentTemplate>
+</asp:UpdatePanel>
 </body>
 </html>
