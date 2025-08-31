@@ -13,7 +13,7 @@
     <RootNamespace>BossTime</RootNamespace>
     <AssemblyName>BossTime</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <Use64BitIISExpress />
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
@@ -85,10 +85,15 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Default.aspx" />
+    <Content Include="BossTimer.aspx" />
+    <Content Include="CustomError.aspx" />
     <Content Include="images\Aragonian.png" />
     <Content Include="images\Bloody Prince.png" />
     <Content Include="images\Chaos Cara Queen.png" />
+    <Content Include="images\Coins\CoinLarge.png" />
+    <Content Include="images\Coins\CoinMed.png" />
+    <Content Include="images\Coins\CoinMega.png" />
+    <Content Include="images\Coins\CoinSm.png" />
     <Content Include="images\deius.png" />
     <Content Include="images\Devil Shy.png" />
     <Content Include="images\Draxos.png" />
@@ -113,6 +118,8 @@
     <Content Include="images\vengeful.png" />
     <Content Include="images\window.png" />
     <Content Include="images\Yagditha.png" />
+    <Content Include="Default.aspx" />
+    <Content Include="StripeReceiver.aspx" />
     <Content Include="UserPanel.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="Register.aspx" />
@@ -130,12 +137,33 @@
   <ItemGroup>
     <Compile Include="Classes\APIHandler.cs" />
     <Compile Include="Classes\SystemVariables.cs" />
+    <Compile Include="BossTimer.aspx.cs">
+      <DependentUpon>BossTimer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BossTimer.aspx.designer.cs">
+      <DependentUpon>BossTimer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CustomError.aspx.cs">
+      <DependentUpon>CustomError.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CustomError.aspx.designer.cs">
+      <DependentUpon>CustomError.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="StripeReceiver.aspx.cs">
+      <DependentUpon>StripeReceiver.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StripeReceiver.aspx.designer.cs">
+      <DependentUpon>StripeReceiver.aspx</DependentUpon>
     </Compile>
     <Compile Include="UserPanel.aspx.cs">
       <DependentUpon>UserPanel.aspx</DependentUpon>
@@ -193,7 +221,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>60221</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:60221/</IISUrl>
+          <IISUrl>http://localhost/BossTime</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

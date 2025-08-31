@@ -1,7 +1,7 @@
 ﻿body {
     background-color: transparent;
     font-family: Verdana;
-    background-image: url('/images/bg.png');
+    background-image: url('../images/bg.png');
     background-repeat: no-repeat;
     background-size: cover;
     background-blend-mode:luminosity;
@@ -57,6 +57,71 @@ tr{
 
 .SuperFront {
     z-index: 999999999999999;
+}
+
+.CoinPacks {
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: inline-block;
+    align-content: center;
+    align-items: center;
+    text-align:center;
+}
+
+.btnCopper {
+    cursor: pointer;
+    margin: -1px;
+    margin-top: 20px;
+    width: 99.9%;
+    overflow: hidden;
+    height: 50px;
+    color: white;
+    text-transform: uppercase;
+    text-shadow: calc(1.5px * var(--scale) / 4.5) calc(-1.5px * var(--scale) / 4.5) calc(1.5px * var(--scale) / 4.5) #fffcf2, calc(-1.5px * var(--scale) / 4.5) calc(1.5px * var(--scale) / 4.5) calc(1.5px * var(--scale) / 4.5) #160500;
+    background: repeating-conic-gradient( #bdab8c 0deg 30deg, #766652 30deg 60deg );
+    background-image: radial-gradient(circle at 50% 50%, #bdab8c 0%, #766652 105%);
+    border: 0px;
+}
+
+.CoinPack {
+    height: 250px;
+    width: 250px;
+    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    border-image: linear-gradient(to right, darkblue, darkorchid) 1;
+    transition: transform 0.2s linear;
+    margin: 50px;
+
+    background-color: rgba(0,0,0,0.5);
+    overflow: hidden;
+    color: white;
+
+    border-radius: 5px;
+    box-shadow: 0px 0px 3px 0px grey;
+}
+
+    .CoinPack:hover {
+        transform: scale(1.1);
+        transition: transform 0.2s linear;
+        cursor: pointer;
+        transform: rotate3d(1,1,1,-10deg);
+        
+    }
+
+.CoinPackHead {
+    display: inline-block;
+    margin-bottom: 150px;
+    font-size: 20pt;
+    text-shadow: calc(1.5px * var(--scale) / 4.5) calc(-1.5px * var(--scale) / 4.5) calc(1.5px * var(--scale) / 4.5) #fffcf2, calc(-1.5px * var(--scale) / 4.5) calc(1.5px * var(--scale) / 4.5) calc(1.5px * var(--scale) / 4.5) #160500;
+    background: repeating-conic-gradient( #bdab8c 0deg 30deg, #766652 30deg 60deg );
+    background-image: radial-gradient(circle at 50% 50%, #bdab8c 0%, #766652 105%);
+    width: 99.9%;
+    overflow: hidden;
 }
 
 
@@ -171,10 +236,9 @@ tr{
 }
 
 .RegBox {
-    left:50%;
+    left: 50%;
     top: 50%;
-
-    transform:translate(-50%,-50%);
+    transform: translate(-50%,-50%);
     position: absolute;
     font-size: medium;
     color: white;
@@ -182,6 +246,9 @@ tr{
     background-color: rgba(0,0,0,0.5);
     text-transform: uppercase;
     overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height:80vh;
     color: white;
     border-radius: 10px;
     box-shadow: 0px 0px 3px 0px grey;
@@ -243,6 +310,7 @@ tr{
     z-index:99999999;
     object-fit:contain;
     width:250px;
+    max-width:20vw;
 }
 
 .btnClose {

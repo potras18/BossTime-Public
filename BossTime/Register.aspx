@@ -11,7 +11,7 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <asp:Image runat="server" CssClass="ptLogo" ID="imgLogo" draggable="false" ImageUrl="~/images/logo_pt.png" /></asp:Image>
+        <asp:Image runat="server" CssClass="ptLogo" ID="imgLogo" draggable="false" ImageUrl="~/images/logo_pt.png" />
         <div class="RegBox">
             <h1>Register Account</h1><br />
 
@@ -19,6 +19,8 @@
             <asp:TextBox  ID="tbUsername" runat="server" CssClass="tbReg" MaxLength="20" AutoCompleteType="Disabled"></asp:TextBox><br /><br />
             <label>Password</label><br />
             <asp:TextBox  ID="tbPassword" runat="server" CssClass="tbReg" TextMode="Password" MaxLength="20" AutoCompleteType="Disabled"></asp:TextBox><br /><br />
+            <label>Confirm Password</label><br />
+            <asp:TextBox  ID="tbConfPass" runat="server" CssClass="tbReg" TextMode="Password" MaxLength="20" AutoCompleteType="Disabled"></asp:TextBox><br /><br />
             <label>Email</label><br />
             <asp:TextBox  ID="tbEmail" runat="server" CssClass="tbReg" MaxLength="50" AutoCompleteType="Disabled"></asp:TextBox><br /><br />
             <asp:Button ID="btnRegister" runat="server" CssClass="btnReg" Text="Register" OnClick="btnRegister_Click" /><br />

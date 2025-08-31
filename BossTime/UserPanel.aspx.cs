@@ -18,10 +18,13 @@ namespace BossTime
     {
 
         string usern = "";
+        private AccountData accountData;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             try
             {
+                
                 string auth = Request.Cookies["Auth"].Value;
                 if (!string.IsNullOrEmpty(auth))
                 {
@@ -29,8 +32,10 @@ namespace BossTime
                     APIResponse resp = api.ValidateToken(auth);
                     if (resp.Success)
                     {
-                        lblWelcome.Text = $"Welcome, {resp.Data}";
-                        usern = resp.Data.ToString();
+                        AccountData ad = resp.Data as AccountData;
+                        accountData = ad;
+                        lblWelcome.Text = $"Welcome, {ad.Username} ({ad.Coins} Coins)";
+                        usern = ad.Username;
                     }
                     else
                     {
@@ -81,13 +86,28 @@ namespace BossTime
                         Stripe.PriceService prs = new Stripe.PriceService();
                         Price pp = prs.Get(cp.DefaultPriceId);
 
+                        Panel pnl = new Panel();
+                        pnl.CssClass = "CoinPack";
+                        pnl.BackImageUrl = cp.Images[0];
+                        
+
+
                         Button btn = new Button();
                         btn.Text = $"{cp.Description} - {pp.UnitAmount / 100.0m} {pp.Currency}";
-                        btn.CssClass = "btnReg";
+                        btn.CssClass = "btnCopper";
                         btn.CommandArgument = cp.Id;
+                        btn.ID = "btn" + cp.Name;
+                        pnl.Attributes.Add("Onclick", "document.getElementById('" + btn.ClientID + "').click();");
 
                         btn.Click += btnDonate_Click;
-                        dvPackages.Controls.Add(btn);
+
+                        Label lbl = new Label();
+                        
+                        lbl.Text = cp.Name;
+                        lbl.Attributes.Add("class", "CoinPackHead");
+                        pnl.Controls.Add(lbl);
+                        pnl.Controls.Add(btn);
+                        dvPackages.Controls.Add(pnl);
 
 
                     }
@@ -116,6 +136,10 @@ namespace BossTime
             Button btn = (Button)sender;
 
             //CoinPackage cp = StripeData.CoinPackages.Find((x)=>x.ID == btn.CommandArgument);
+
+            lblStatus.Text = "Loading Stripe";
+            hdStatus.InnerText = "Waiting for Stripe!";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "Shroud", "ShowShroud();", true);
 
             string id = btn.CommandArgument;
 
@@ -153,7 +177,7 @@ namespace BossTime
                 if (thisProduct != null)
                 {
 
-                    Debug.WriteLine(thisProduct.ToJson());
+                    
 
                     PaymentLinkCreateOptions plco = new PaymentLinkCreateOptions()
                     {
@@ -165,12 +189,14 @@ namespace BossTime
                         Metadata = new Dictionary<string, string>()
                         {
                             { "Username", usern },
+                            { "UserHash", accountData.AccountHash },
                             { "Price", thisProduct.DefaultPrice.UnitAmount.ToString() },
                             { "Coins", thisProduct.Metadata["Coins"].ToString() },
                             { "PackageID", thisProduct.Id },
                             { "PackageName", thisProduct.Name },
                             { "Currency", thisProduct.DefaultPrice.Currency },
                             { "Item", "Donation" },
+                            { "UniqueKey", Guid.NewGuid().ToString() }
                         },
                         SubmitType = "donate",
                         PaymentMethodTypes = new List<string>

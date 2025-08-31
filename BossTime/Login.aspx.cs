@@ -36,6 +36,7 @@ namespace BossTime
             else
             {
                 hdStatus.InnerText = "Error!";
+
                 Response.Cookies.Remove("Auth");
             }
         }

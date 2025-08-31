@@ -11,7 +11,7 @@ namespace BossTime
 {
 
 
-    public partial class UserPanel
+    public partial class CustomError
     {
 
         /// <summary>
@@ -24,15 +24,6 @@ namespace BossTime
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// upMain control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upMain;
-
-        /// <summary>
         /// imgLogo control.
         /// </summary>
         /// <remarks>
@@ -42,31 +33,22 @@ namespace BossTime
         protected global::System.Web.UI.WebControls.Image imgLogo;
 
         /// <summary>
-        /// lblWelcome control.
+        /// btnReturn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblWelcome;
+        protected global::System.Web.UI.WebControls.Button btnReturn;
 
         /// <summary>
-        /// lbLogout control.
+        /// btnHome control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbLogout;
-
-        /// <summary>
-        /// dvPackages control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl dvPackages;
+        protected global::System.Web.UI.WebControls.Button btnHome;
 
         /// <summary>
         /// hdStatus control.

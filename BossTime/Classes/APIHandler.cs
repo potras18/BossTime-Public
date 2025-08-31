@@ -21,7 +21,7 @@ namespace BossTime
 {
     public class APIHandler
     {
-        string APIKey = "";
+
         string JsonFilePath;
 
         ServerData serverData = null;
@@ -33,6 +33,8 @@ namespace BossTime
 
 
         }
+
+    #region BOSS_TIME
 
         // Gets the current boss minute from the database or cache
         public int GetBossMinute(bool force = false)
@@ -178,7 +180,9 @@ namespace BossTime
             return new ServerData();
         }
 
+    #endregion
 
+    #region ACCOUNT_REGISTRATION
         // Registers a new account with the given username, password, and email
         // Returns an APIResponse indicating success or failure
         public APIResponse RegisterAccount(string username, string password, string email)
@@ -335,12 +339,14 @@ namespace BossTime
             catch (Exception ex)
             {
                 response.Success = false;
-                response.Message = "An error occurred during registration. " + ex.ToString();
+                response.Message = "An error occurred during registration. " + ex.Message.ToString();
                 return response;
             }
 
         }
+        #endregion
 
+    #region ACCOUNT_LOGIN
         // Logs in an account with the given username and password
         /// <summary>
         /// Logs in an account with the given username and password.
@@ -417,12 +423,23 @@ namespace BossTime
             {
                 response.Success = false;
                 Debug.WriteLine(ex);
-                response.Message = "An error occurred during login. " + ex.ToString();
+                response.Message = "An error occurred during login. " + ex.Message.ToString();
                 return response;
             }
 
         }
 
+        #region ACCOUNT_TOKEN_VERIFICATION
+        // Validates the given token and returns the associated account data if valid
+        /// <summary>
+        /// Validates the given token and returns the associated account data if valid.
+        /// The token is decrypted to retrieve the login data.
+        /// The login data is checked for validity, including username, user ID, GUID, and login date (must be within 1 day).
+        /// If valid, the method returns success with the account data.
+        /// If invalid or expired, the method returns failure with an appropriate message.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public APIResponse ValidateToken(string token)
         {
             APIResponse response = new APIResponse() { Success = false, Message = "Default" };
@@ -430,11 +447,11 @@ namespace BossTime
             {
                 string decdata = Decrypt(token);
                 LoginData ld = JsonConvert.DeserializeObject<LoginData>(decdata);
-                if (ld != null && !string.IsNullOrWhiteSpace(ld.Username) && !string.IsNullOrWhiteSpace(ld.ID) && !string.IsNullOrWhiteSpace(ld.GUID) && (DateTime.UtcNow - ld.LoginDate.ToUniversalTime()).TotalDays <=1)
+                if (ld != null && !string.IsNullOrWhiteSpace(ld.Username) && !string.IsNullOrWhiteSpace(ld.ID) && !string.IsNullOrWhiteSpace(ld.GUID) && (DateTime.UtcNow - ld.LoginDate.ToUniversalTime()).TotalDays <= 1)
                 {
                     response.Success = true;
                     response.Message = "Token is valid.";
-                    response.Data = ld.Username;
+                    response.Data = new AccountData(ld);
                     return response;
                 }
                 else
@@ -452,6 +469,310 @@ namespace BossTime
                 return response;
             }
         }
+        #endregion
+
+        public int GetCoins(LoginData ld)
+        {
+            try
+            {
+                SqlDataSource ds = new SqlDataSource();
+                ds.SelectParameters.Clear();
+                ds.SelectParameters.Add("id", ld.ID.Trim());
+
+                ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
+                ds.SelectCommand = "SELECT Coins from UserInfo WHERE ID=@id";
+                DataView dv = ds.Select(DataSourceSelectArguments.Empty) as DataView;
+                DataTable dt = dv.ToTable();
+                Debug.WriteLine(dt.Rows.Count);
+                if (dt.Rows.Count > 0)
+                {
+                    if (dt.Rows[0]["Coins"] != null && int.TryParse(dt.Rows[0]["Coins"].ToString(), out int coins))
+                    {
+                        return coins;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+                else
+                {
+                    // Invalid credentials
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                return 0;
+            }
+        }
+
+        #endregion
+
+    #region STRIPE_PAYMENT_HANDLING
+
+
+        // Registers a new payment intent in the database
+        /// <summary>
+        /// Registers a new payment intent in the database.
+        /// The payment intent includes details such as username, user hash, package ID, package name, amount, coins, payment link ID, creation date, completion status, unique key, payment event ID, and request ID.
+        /// If the registration is successful, it returns a success message.
+        /// If an error occurs, it returns an appropriate error message.
+        /// </summary>
+        /// <param name="intent"></param>
+        /// <returns></returns>
+        public APIResponse RegisterPaymentIntent(ptPaymentIntent intent)
+        {
+            APIResponse response = new APIResponse() { Success = false, Message = "Default" };
+            try
+            {
+                SqlDataSource ds = new SqlDataSource();
+                ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
+                ds.InsertParameters.Clear();
+                // Add parameters for insertion
+                ds.InsertParameters.Add("uname", intent.Username);
+                ds.InsertParameters.Add("uid", intent.UserHash);
+                ds.InsertParameters.Add("pid", intent.PackageID);
+                ds.InsertParameters.Add("pname", intent.PackageName);
+                ds.InsertParameters.Add("amt", intent.Amount.ToString());
+                ds.InsertParameters.Add("coins", intent.Coins.ToString());
+                ds.InsertParameters.Add("paymentlinkid", intent.PaymentLinkID);
+                ds.InsertParameters.Add("createdat", intent.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"));
+                ds.InsertParameters.Add("completed", intent.Completed ? "1" : "0");
+                ds.InsertParameters.Add("ukey", intent.PaymentUniqueKey);
+                ds.InsertParameters.Add("evid", intent.PaymentEventID);
+                ds.InsertParameters.Add("rqid", intent.RequestID);
+                
+
+                ds.InsertCommand = "INSERT INTO StripeEvents (Username,UserHash,PackageID,PackageName,PaymentAmount,CoinAmount,StripeEventId,StripePaymentLinkId,Created,Completed,UniqueKey,ReqID) VALUES (@uname,@uid,@pid,@pname,@amt,@coins,@evid,@paymentlinkid,@createdat,@completed,@ukey,@rqid);";
+                ds.Insert();
+                response.Success = true;
+                response.Message = "Payment intent registered successfully.";
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                response.Success = false;
+                response.Message = "An error occurred during payment intent registration.";
+                return response;
+            }
+        }
+
+        // Updates the payment intent as completed and updates user coins
+        /// <summary>
+        /// Updates the payment intent as completed and updates user coins.
+        /// First, it checks if the payment intent matches the user using the user hash, username, payment link ID, and unique key.
+        /// If the check passes, it updates the payment intent in the database to mark it as completed.
+        /// Then, it updates the user's coin balance by adding the purchased coins.
+        /// If any step fails, it returns an appropriate error message.
+        /// </summary>
+        /// <param name="intent"></param>
+        /// <returns></returns>
+        public APIResponse UpdatePaymentCompleted(ptPaymentIntent intent)
+        {
+            APIResponse response = new APIResponse() { Success = false, Message = "Default" };
+
+
+
+            try
+            {
+
+                bool CheckPaymentTrail = CheckPaymentAgainstUser(intent.UserHash, intent.Username, intent.PaymentLinkID, intent.PaymentUniqueKey);
+
+                SqlDataSource ds = new SqlDataSource();
+                ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
+                ds.UpdateParameters.Clear();
+                // Add parameters for update
+                ds.UpdateParameters.Add("completed", "1");
+                ds.UpdateParameters.Add("plink", intent.PaymentLinkID);
+                ds.UpdateParameters.Add("ukey", intent.PaymentUniqueKey);
+                ds.UpdateCommand = "UPDATE StripeEvents SET Completed=@completed WHERE StripePaymentLinkId=@plink and UniqueKey=@ukey;";
+                ds.Updated += new SqlDataSourceStatusEventHandler((snd, e) =>
+                {
+                    foreach (DbParameter pr in e.Command.Parameters)
+                    {
+                        Debug.WriteLine(pr.ParameterName + " - " + pr.Value);
+                    }
+                    if (e.Exception != null)
+                    {
+                        throw e.Exception;
+                    }
+                    else
+                    {
+                        response.Success = true;
+                        response.Message = $"Payment intent updated for {intent.Username}";
+                    }
+
+                });
+                ds.Update();
+                bool CoinsUpdate = UpdateUserCoins(intent.Username, intent.Coins);
+
+                if (!CoinsUpdate)
+                {
+                    response.Success = false;
+                    response.Message = "Payment updated, but failed to update user coins.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+                response.Success = false;
+                response.Message = "An error occurred during payment intent update.";
+                return response;
+            }
+
+            return response;
+        }
+
+        // Check if the payment intent matches the user
+        /// <summary>
+        /// Check if the payment intent matches the user.
+        /// First, it checks if the user hash matches the username and user ID.
+        /// If the user hash is valid, it queries the database to check if there is a matching payment intent with the given user hash, username, payment link ID, and unique key.
+        /// If a match is found, it returns true, otherwise false.
+        /// If the user hash is invalid, it returns false.
+        /// </summary>
+        /// <param name="userhash"></param>
+        /// <param name="usern"></param>
+        /// <param name="paymentlink"></param>
+        /// <param name="uniquekey"></param>
+        /// <returns></returns>
+        private bool CheckPaymentAgainstUser(string userhash, string usern, string paymentlink, string uniquekey)
+        {
+
+            try
+            {
+                bool UserValidHash = CheckUserHash(usern, userhash);
+
+                if (UserValidHash)
+                {
+
+                    SqlDataSource ds = new SqlDataSource();
+                    ds.SelectParameters.Clear();
+                    ds.SelectParameters.Add("uid", userhash.Trim());
+                    ds.SelectParameters.Add("uname", usern.Trim());
+                    ds.SelectParameters.Add("plink", paymentlink.Trim());
+                    ds.SelectParameters.Add("ukey", uniquekey.Trim());
+                    ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
+                    ds.SelectCommand = "SELECT Username from StripeEvents WHERE UserHash=@uid AND Username=@uname AND StripePaymentLinkId=@plink AND UniqueKey=@ukey";
+                    DataView dv = ds.Select(DataSourceSelectArguments.Empty) as DataView;
+                    DataTable dt = dv.ToTable();
+                    Debug.WriteLine(dt.Rows.Count);
+                    if (dt.Rows.Count > 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+            }
+
+            return false;
+        }
+
+
+        // Check if the user hash matches the username and user ID
+        /// <summary>
+        /// Checks if the user hash matches the username and user ID.
+        /// The user hash is generated by hashing the username and user ID using SHA256.
+        /// If the hash matches, the method returns true, otherwise false.
+        /// </summary>
+        /// <param name="usern"></param>
+        /// <param name="userhash"></param>
+        /// <returns></returns>
+        private bool CheckUserHash(string usern, string userhash)
+        {
+            try
+            {
+                SqlDataSource ds = new SqlDataSource();
+                ds.SelectParameters.Clear();
+                ds.SelectParameters.Add("acc", usern.Trim());
+                ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
+                ds.SelectCommand = "SELECT AccountName, ID from UserInfo WHERE AccountName=@acc";
+                DataView dv = ds.Select(DataSourceSelectArguments.Empty) as DataView;
+                DataTable dt = dv.ToTable();
+                Debug.WriteLine(dt.Rows.Count);
+                if (dt.Rows.Count > 0)
+                {
+                    string userid = dt.Rows[0]["ID"].ToString();
+                    string checkhash = HashPass(usern, userid);
+
+                    if(checkhash == userhash)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+            }
+            return false;
+        }
+
+
+
+        public bool UpdateUserCoins(string usern, int coins)
+        {
+            try
+            {
+                SqlDataSource ds = new SqlDataSource();
+                ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
+                ds.UpdateParameters.Clear();
+                // Add parameters for update
+                ds.UpdateParameters.Add("coins", coins.ToString());
+                ds.UpdateParameters.Add("uname", usern);
+                ds.UpdateCommand = "UPDATE UserInfo SET Coins=Coins+@coins WHERE AccountName=@uname;";
+                ds.Updated += new SqlDataSourceStatusEventHandler((snd, e) =>
+                {
+                    foreach (DbParameter pr in e.Command.Parameters)
+                    {
+                        Debug.WriteLine(pr.ParameterName + " - " + pr.Value);
+                    }
+                    if (e.Exception != null)
+                    {
+                        throw e.Exception;
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Coins updated for {usern}");
+                    }
+                });
+                ds.Update();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+                return false;
+            }
+        }
+
+
+
+    #endregion
+
+    #region ENCRYPTION
 
         // Method to encrypt data
         public static string Encrypt(string plaintext)
@@ -508,7 +829,7 @@ namespace BossTime
         //SHA256 hash function for password hashing
         // Uses the format USERNAME:password with the username in uppercase
 
-        private string HashPass(string usn, string pass)
+        public string HashPass(string usn, string pass)
         {
             using (SHA256 sha256Hash = SHA256.Create())
             {
@@ -526,8 +847,12 @@ namespace BossTime
             }
         }
     }
-        // Data structure for the API response
-        public class ServerData
+    #endregion
+
+    #region API_CLASSES
+
+    // Data structure for the API response
+    public class ServerData
         {
             public int BossMinute { get; set; } = 0;
             public List<Map> Maps { get; set; } = new List<Map>();
@@ -546,14 +871,89 @@ namespace BossTime
             public List<int> Spawns { get; set; }
         }
 
+    // Data structure for a payment intent
+    /// <summary>
+    /// Data structure for a payment intent
+    /// Includes username, user hash, payment event ID, payment unique key, payment link ID, package name, package ID, amount, coins, creation date, and completion status.
+    /// Used for registering and updating payment intents in the database.
+    /// </summary>
+    public class ptPaymentIntent
+    {
+        public string Username { get; set; }
+
+        public string UserHash { get; set; }
+
+        public string PaymentEventID { get; set; }
+
+        public string PaymentUniqueKey { get; set; }
+
+        public string PaymentLinkID { get; set; }
+
+        public string PackageName { get; set; }
+
+        public string PackageID { get; set; }
+        
+        public string RequestID { get; set; }
+
+        public int Amount { get; set; }
+        public int Coins { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool Completed { get; set; } = false;
+
+        public ptPaymentIntent(string username, string userhash, string packageid, string packagename, int amount, int coins, string paymentlinkid, string paymentEventID, string paymentUniqueKey, string requestID)
+        {
+            Username = username;
+            PaymentLinkID = paymentlinkid;
+            UserHash = userhash;
+            PackageID = packageid;
+            PackageName = packagename;
+            Amount = amount;
+            Coins = coins;
+            PaymentEventID = paymentEventID;
+            PaymentUniqueKey = paymentUniqueKey;
+            RequestID = requestID;
+        }
+
+    }
+
 
     public class LoginData
     {
         public string Username { get; set; }
+
+
         public string ID { get; set; }
         public DateTime LoginDate { get; set; }
 
         public string GUID { get; set; }
+    }
+
+    public class AccountData
+    {
+        public string Username { get; set; }
+
+        public string ID { get; set; }
+
+        public int Coins { get; set; }
+
+        public DateTime LoginDate { get; set; }
+
+        public string GUID { get; set; }
+
+        public string AccountHash { get; set; }
+
+
+        public AccountData(LoginData ld)
+        {
+            Username = ld.Username;
+            ID = ld.ID;
+            LoginDate = ld.LoginDate;
+            GUID = ld.GUID;
+            APIHandler api = new APIHandler();
+            Coins = api.GetCoins(ld);
+            AccountHash = api.HashPass(ld.Username, ld.ID);
+        }
+
     }
 
 
@@ -568,9 +968,11 @@ namespace BossTime
         public object Data { get; set; } = null;
     }
 
+    #endregion
+
 }
 
 
-    
+
 
 

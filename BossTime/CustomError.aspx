@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="BossTime.Login" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="CustomError.aspx.cs" Inherits="BossTime.CustomError" %>
 
 <!DOCTYPE html>
 
@@ -13,17 +13,8 @@
     <form id="form1" runat="server">
         <asp:Image runat="server" CssClass="ptLogo" ID="imgLogo" draggable="false" OnClick="imgLogo_Click" ImageUrl="~/images/logo_pt.png" />
         <div class="RegBox">
-            <h1>Account Login</h1><br />
-
-            <label>Username</label><br />
-            <asp:TextBox  ID="tbUsername" runat="server" CssClass="tbReg" MaxLength="20" AutoCompleteType="DisplayName"></asp:TextBox><br /><br />
-            <label>Password</label><br />
-            <asp:TextBox  ID="tbPassword" runat="server" CssClass="tbReg" TextMode="Password" MaxLength="20"></asp:TextBox><br /><br />
-            
-            
-            <asp:Button ID="btnLogin" type="submit" runat="server" CssClass="btnReg" Text="Login" OnClick="btnLogin_Click" /><br />
-            <br />
-            <asp:LinkButton ForeColor="White" runat="server" Text="Create Account" ID="lbCreateAcc" OnClick="lbCreateAcc_Click"></asp:LinkButton>
+            <asp:Button runat="server" ID="btnReturn" CssClass="btnReg" Text="Previous Page" OnClick="btnReturn_Click" /><br /><br />
+            <asp:Button runat="server" ID="btnHome" CssClass="btnReg" Text="Home Page" OnClick="btnHome_Click" />
         </div>
 
         <div class="UIShroud Hidden" id="divShroud">
