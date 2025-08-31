@@ -71,7 +71,7 @@ namespace BossTime
                 {
                     { "Username", usern },
                     { "Amount", "10" },
-                    { "Currency", "GBP" },
+                    { "Currency", StripeData.Stripe_Currency },
                     { "Item", "Donation" },
                 },
                 SubmitType = "donate",
@@ -79,6 +79,7 @@ namespace BossTime
                 {
                     "card","link"
                 },
+                Currency = StripeData.Stripe_Currency,
 
                 PaymentIntentData = new PaymentLinkPaymentIntentDataOptions
                 {

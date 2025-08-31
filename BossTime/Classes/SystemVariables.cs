@@ -59,8 +59,12 @@ namespace BossTime
     {
         // Set your Stripe API key here. Be sure to use the secret key, not the publishable key.
         public static string Stripe_API_Key = "YOURSTRIPEAPIKEY";
+
         //Set your redirect URL for stripe to use after the transaction is complete
         public static string Stripe_RedirectURL = "https://YOURURL/UserPanel.aspx";
+
+        // Change this to your desired currency code (e.g., "usd", "eur", etc.)
+        public static string Stripe_Currency = "gbp";
 
     }
 
