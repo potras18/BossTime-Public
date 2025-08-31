@@ -11,7 +11,7 @@ namespace BossTime
 {
 
 
-    public partial class Register
+    public partial class Login
     {
 
         /// <summary>
@@ -51,31 +51,22 @@ namespace BossTime
         protected global::System.Web.UI.WebControls.TextBox tbPassword;
 
         /// <summary>
-        /// tbEmail control.
+        /// btnLogin control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox tbEmail;
+        protected global::System.Web.UI.WebControls.Button btnLogin;
 
         /// <summary>
-        /// btnRegister control.
+        /// lbCreateAcc control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnRegister;
-
-        /// <summary>
-        /// lbLoginAccount control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbLoginAccount;
+        protected global::System.Web.UI.WebControls.LinkButton lbCreateAcc;
 
         /// <summary>
         /// hdStatus control.

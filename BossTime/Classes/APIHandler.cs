@@ -341,10 +341,173 @@ namespace BossTime
 
         }
 
+        // Logs in an account with the given username and password
+        /// <summary>
+        /// Logs in an account with the given username and password.
+        /// Returns an APIResponse indicating success or failure.
+        /// If successful, the Data field contains encrypted login data.
+        /// The login data includes the username, user ID, login date, and a unique GUID.
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public APIResponse LoginAccount(string username, string password)
+        {
+
+
+            APIResponse response = new APIResponse() { Success = false, Message = "Default" };
+ 
+
+            try
+            {
+
+                SqlDataSource ds = new SqlDataSource();
+                ds.SelectParameters.Clear();
+                ds.SelectParameters.Add("acc", username.Trim());
+                string hp = HashPass(username, password).Trim();
+                Debug.WriteLine(hp);
+                ds.SelectParameters.Add("pass", hp);
+                ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
+                ds.SelectCommand = "SELECT AccountName,ID,BanStatus from UserInfo WHERE AccountName=@acc AND Password=@pass";
+                DataView dv = ds.Select(DataSourceSelectArguments.Empty) as DataView;
+                DataTable dt = dv.ToTable();
+                Debug.WriteLine(dt.Rows.Count);
+                if (dt.Rows.Count > 0)
+                {
+
+                    if (dt.Rows[0]["BanStatus"] != null && int.TryParse(dt.Rows[0]["BanStatus"].ToString(), out int banstatus))
+                    {
+                        if (banstatus != 0)
+                        {
+                            response.Success = false;
+                            response.Message = "Account is banned.";
+                            return response;
+                        }
+                    }
+
+                    // User, data correct exists
+                    response.Success = true;
+                    response.Message = "Login Successful!";
+
+                    LoginData ld = new LoginData()
+                    {
+                        Username = dt.Rows[0]["AccountName"].ToString(),
+                        ID = dt.Rows[0]["ID"].ToString(),
+                        LoginDate = DateTime.UtcNow,
+                        GUID = Guid.NewGuid().ToString()
+                    };
+                    string ldjson = JsonConvert.SerializeObject(ld);
+
+                    string encdata = Encrypt(ldjson);
+
+                    response.Data = encdata;
+
+                    return response;
+                }
+                else
+                {
+                    // Invalid credentials
+                    response.Success = false;
+                    response.Message = "Login Failed!";
+                    return response;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                Debug.WriteLine(ex);
+                response.Message = "An error occurred during login. " + ex.ToString();
+                return response;
+            }
+
+        }
+
+        public APIResponse ValidateToken(string token)
+        {
+            APIResponse response = new APIResponse() { Success = false, Message = "Default" };
+            try
+            {
+                string decdata = Decrypt(token);
+                LoginData ld = JsonConvert.DeserializeObject<LoginData>(decdata);
+                if (ld != null && !string.IsNullOrWhiteSpace(ld.Username) && !string.IsNullOrWhiteSpace(ld.ID) && !string.IsNullOrWhiteSpace(ld.GUID) && (DateTime.UtcNow - ld.LoginDate.ToUniversalTime()).TotalDays <=1)
+                {
+                    response.Success = true;
+                    response.Message = "Token is valid.";
+                    response.Data = ld.Username;
+                    return response;
+                }
+                else
+                {
+                    response.Success = false;
+                    response.Message = "Token is invalid or expired.";
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                Debug.WriteLine(ex.ToString());
+                response.Message = "An error occurred during token validation. " + ex.ToString();
+                return response;
+            }
+        }
+
+        // Method to encrypt data
+        public static string Encrypt(string plaintext)
+        {
+            // Create a new instance of the AES encryption algorithm
+            using (Aes aes = Aes.Create())
+            {
+                
+                aes.Key = Encoding.UTF8.GetBytes(SystemVariables.EncryptionKey.PadRight(32,'0'));
+                Debug.WriteLine(aes.Key.Length);
+                aes.IV = SystemVariables.AES_IV;
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+                // Create the streams used for encryption
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    // Create a CryptoStream using the encryptor
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (StreamWriter sw = new StreamWriter(cs))
+                        {
+                            sw.Write(plaintext);
+                        }
+                    }
+                    // Store the encrypted data in the public static byte array
+                    byte[] encryptedData = ms.ToArray();
+                    return Convert.ToBase64String(encryptedData);
+                }
+            }
+        }
+        // Method to decrypt data
+        public static string Decrypt(string ciphertext)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(SystemVariables.EncryptionKey.PadRight(32, '0'));
+                aes.IV = SystemVariables.AES_IV;
+                                       
+                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+                // Create the streams used for decryption
+                using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(ciphertext)))
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader sr = new StreamReader(cs))
+                        {
+                            return sr.ReadToEnd();
+                        }
+                    }
+                }
+            } 
+        }
+
 
         //SHA256 hash function for password hashing
         // Uses the format USERNAME:password with the username in uppercase
-        
+
         private string HashPass(string usn, string pass)
         {
             using (SHA256 sha256Hash = SHA256.Create())
@@ -382,6 +545,16 @@ namespace BossTime
             public int MapLevel { get; set; } = 0;
             public List<int> Spawns { get; set; }
         }
+
+
+    public class LoginData
+    {
+        public string Username { get; set; }
+        public string ID { get; set; }
+        public DateTime LoginDate { get; set; }
+
+        public string GUID { get; set; }
+    }
 
 
 

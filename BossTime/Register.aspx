@@ -11,7 +11,7 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <asp:ImageButton runat="server" CssClass="ptLogo" ID="imgLogo" draggable="false" OnClick="imgLogo_Click" ImageUrl="~/images/logo_pt.png" />
+        <asp:Image runat="server" CssClass="ptLogo" ID="imgLogo" draggable="false" ImageUrl="~/images/logo_pt.png" /></asp:Image>
         <div class="RegBox">
             <h1>Register Account</h1><br />
 
@@ -23,6 +23,7 @@
             <asp:TextBox  ID="tbEmail" runat="server" CssClass="tbReg" MaxLength="50" AutoCompleteType="Disabled"></asp:TextBox><br /><br />
             <asp:Button ID="btnRegister" runat="server" CssClass="btnReg" Text="Register" OnClick="btnRegister_Click" /><br />
             <br />
+            <asp:LinkButton ForeColor="White" runat="server" Text="Login to Existing Account" ID="lbLoginAccount" OnClick="lbLoginAccount_Click"></asp:LinkButton>
         </div>
 
         <div class="UIShroud Hidden" id="divShroud">
