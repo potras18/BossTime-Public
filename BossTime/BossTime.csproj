@@ -85,6 +85,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ActivateAccount.aspx" />
     <Content Include="BossTimer.aspx" />
     <Content Include="CustomError.aspx" />
     <Content Include="images\Aragonian.png" />
@@ -135,7 +136,15 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActivateAccount.aspx.cs">
+      <DependentUpon>ActivateAccount.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ActivateAccount.aspx.designer.cs">
+      <DependentUpon>ActivateAccount.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Classes\APIHandler.cs" />
+    <Compile Include="Classes\EmailHandler.cs" />
     <Compile Include="Classes\SystemVariables.cs" />
     <Compile Include="BossTimer.aspx.cs">
       <DependentUpon>BossTimer.aspx</DependentUpon>

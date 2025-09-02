@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -295,12 +296,17 @@ namespace BossTime
                     ds.InsertParameters.Add("pass", finalpass);
                     ds.InsertParameters.Add("dbdate", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
                     ds.InsertParameters.Add("coins", RegisterVariables.NewAccountStartingCoins.ToString());
+                    int PreActivation = 1;
+                    if(SystemVariables.RequireEmailAccountActivation)
+                    {
+                        PreActivation = 0;
+                    }
+                    ds.InsertParameters.Add("preauth", PreActivation.ToString());
 
 
 
 
-
-                    ds.InsertCommand = "INSERT INTO UserInfo (AccountName, Password, Email, RegisDay, Active,Coins,GameMasterType,GameMasterLevel,GameMasterMacAddress,CoinsTraded,BanStatus,IsMuted,MuteCount,ActiveCode) VALUES (@acc, @pass, @email, @dbdate,1,@coins,0,0,'',0,0,0,0,1);";
+                    ds.InsertCommand = "INSERT INTO UserInfo (AccountName, Password, Email, RegisDay, Active,Coins,GameMasterType,GameMasterLevel,GameMasterMacAddress,CoinsTraded,BanStatus,IsMuted,MuteCount,ActiveCode) VALUES (@acc, @pass, @email, @dbdate,@preauth,@coins,0,0,'',0,0,0,0,1);";
                     ds.Inserted += new SqlDataSourceStatusEventHandler((snd, e) => {
 
                        foreach(DbParameter pr in e.Command.Parameters)
@@ -344,19 +350,83 @@ namespace BossTime
             }
 
         }
+
+
+        public APIResponse ActivateAccount(string username, string email)
+        {
+            APIResponse response = new APIResponse() { Success = false, Message = "Default" };
+            try
+            {
+                SqlDataSource ds = new SqlDataSource();
+                ds.SelectParameters.Clear();
+                ds.SelectParameters.Add("acc", username);
+                ds.SelectParameters.Add("email", email);
+                ds.ConnectionString = $"Data Source={DBCredentials.server}  ;Initial Catalog=UserDB;User ID=  {DBCredentials.dbID}  ;Password=  {DBCredentials.dbPass}";
+                ds.SelectCommand = "SELECT AccountName from UserInfo WHERE AccountName=@acc AND Email=@email AND Active=0";
+                DataView dv = ds.Select(DataSourceSelectArguments.Empty) as DataView;
+                DataTable dt = dv.ToTable();
+                if (dt.Rows.Count == 0)
+                {
+                    Debug.WriteLine("ROWS 0");
+                    // Username or email already exists
+                    response.Success = false;
+                    response.Message = "Account not found or already activated.";
+                    return response;
+                }
+                else
+                {
+                    Debug.WriteLine("ROWS NOT 0");
+                    ds.UpdateParameters.Clear();
+                    // Add parameters for update
+                    ds.UpdateParameters.Add("active", "1");
+                    ds.UpdateParameters.Add("acc", username);
+                    ds.UpdateCommand = "UPDATE UserInfo SET Active=@active WHERE AccountName=@acc;";
+                    ds.Updated += new SqlDataSourceStatusEventHandler((snd, e) =>
+                    {
+                        foreach (DbParameter pr in e.Command.Parameters)
+                        {
+                            Debug.WriteLine(pr.ParameterName + " - " + pr.Value);
+                        }
+                        if (e.Exception != null)
+                        {
+                            Debug.WriteLine("EXCEPTION UPDATING");
+                            throw e.Exception;
+                        }
+                        else
+                        {
+                            Debug.WriteLine("SUCCESS");
+                            response.Success = true;
+                            response.Message = $"Account Activated for {username}";
+                        }
+                    });
+                    ds.Update();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("FAILED");
+                response.Success = false;
+                response.Message = "An error occurred during account activation. " + ex.Message.ToString();
+                return response;
+            }
+
+            return response;
+        }
+
+
         #endregion
 
-    #region ACCOUNT_LOGIN
-        // Logs in an account with the given username and password
-        /// <summary>
-        /// Logs in an account with the given username and password.
-        /// Returns an APIResponse indicating success or failure.
-        /// If successful, the Data field contains encrypted login data.
-        /// The login data includes the username, user ID, login date, and a unique GUID.
-        /// </summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
+            #region ACCOUNT_LOGIN
+            // Logs in an account with the given username and password
+            /// <summary>
+            /// Logs in an account with the given username and password.
+            /// Returns an APIResponse indicating success or failure.
+            /// If successful, the Data field contains encrypted login data.
+            /// The login data includes the username, user ID, login date, and a unique GUID.
+            /// </summary>
+            /// <param name="username"></param>
+            /// <param name="password"></param>
+            /// <returns></returns>
         public APIResponse LoginAccount(string username, string password)
         {
 
@@ -579,40 +649,56 @@ namespace BossTime
             try
             {
 
-                bool CheckPaymentTrail = CheckPaymentAgainstUser(intent.UserHash, intent.Username, intent.PaymentLinkID, intent.PaymentUniqueKey);
+                string PaymentEmail = CheckPaymentAgainstUser(intent.UserHash, intent.Username, intent.PaymentLinkID, intent.PaymentUniqueKey);
 
-                SqlDataSource ds = new SqlDataSource();
-                ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
-                ds.UpdateParameters.Clear();
-                // Add parameters for update
-                ds.UpdateParameters.Add("completed", "1");
-                ds.UpdateParameters.Add("plink", intent.PaymentLinkID);
-                ds.UpdateParameters.Add("ukey", intent.PaymentUniqueKey);
-                ds.UpdateCommand = "UPDATE StripeEvents SET Completed=@completed WHERE StripePaymentLinkId=@plink and UniqueKey=@ukey;";
-                ds.Updated += new SqlDataSourceStatusEventHandler((snd, e) =>
+                if (string.IsNullOrWhiteSpace(PaymentEmail))
                 {
-                    foreach (DbParameter pr in e.Command.Parameters)
+                    response.Success = false;
+                    response.Message = "Payment intent does not match user.";
+                    return response;
+                }
+                else
+                {
+                    SqlDataSource ds = new SqlDataSource();
+                    ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
+                    ds.UpdateParameters.Clear();
+                    // Add parameters for update
+                    ds.UpdateParameters.Add("completed", "1");
+                    ds.UpdateParameters.Add("plink", intent.PaymentLinkID);
+                    ds.UpdateParameters.Add("ukey", intent.PaymentUniqueKey);
+                    ds.UpdateCommand = "UPDATE StripeEvents SET Completed=@completed WHERE StripePaymentLinkId=@plink and UniqueKey=@ukey;";
+                    ds.Updated += new SqlDataSourceStatusEventHandler((snd, e) =>
                     {
-                        Debug.WriteLine(pr.ParameterName + " - " + pr.Value);
-                    }
-                    if (e.Exception != null)
+                        foreach (DbParameter pr in e.Command.Parameters)
+                        {
+                            Debug.WriteLine(pr.ParameterName + " - " + pr.Value);
+                        }
+                        if (e.Exception != null)
+                        {
+                            throw e.Exception;
+                        }
+                        else
+                        {
+                            response.Success = true;
+                            response.Message = $"Payment intent updated for {intent.Username}";
+                        }
+
+                    });
+                    ds.Update();
+                    bool CoinsUpdate = UpdateUserCoins(intent.Username, intent.Coins);
+
+                    if (!CoinsUpdate)
                     {
-                        throw e.Exception;
+                        response.Success = false;
+                        response.Message = "Payment updated, but failed to update user coins.";
                     }
                     else
                     {
                         response.Success = true;
-                        response.Message = $"Payment intent updated for {intent.Username}";
+                        response.Message = "Payment and coins updated successfully.";
+                        string html = $"<h1>Thank you for your purchase from {SystemVariables.ServerName}!</h1><br /><p>Your purchase of {intent.Coins} coins for {intent.PackageName} has been successfully processed.</p><br /><p>If you did not make this purchase, please contact support immediately.</p><br /><p>Best regards,<br />The {SystemVariables.ServerName} Team</p>";
+                        EmailHandler.SendEmail(PaymentEmail, $"Thank you for your purchase from {SystemVariables.ServerName}!", html, SystemVariables.ServerName);
                     }
-
-                });
-                ds.Update();
-                bool CoinsUpdate = UpdateUserCoins(intent.Username, intent.Coins);
-
-                if (!CoinsUpdate)
-                {
-                    response.Success = false;
-                    response.Message = "Payment updated, but failed to update user coins.";
                 }
             }
             catch (Exception ex)
@@ -622,6 +708,7 @@ namespace BossTime
                 response.Message = "An error occurred during payment intent update.";
                 return response;
             }
+
 
             return response;
         }
@@ -639,7 +726,7 @@ namespace BossTime
         /// <param name="paymentlink"></param>
         /// <param name="uniquekey"></param>
         /// <returns></returns>
-        private bool CheckPaymentAgainstUser(string userhash, string usern, string paymentlink, string uniquekey)
+        private string CheckPaymentAgainstUser(string userhash, string usern, string paymentlink, string uniquekey)
         {
 
             try
@@ -656,22 +743,23 @@ namespace BossTime
                     ds.SelectParameters.Add("plink", paymentlink.Trim());
                     ds.SelectParameters.Add("ukey", uniquekey.Trim());
                     ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
-                    ds.SelectCommand = "SELECT Username from StripeEvents WHERE UserHash=@uid AND Username=@uname AND StripePaymentLinkId=@plink AND UniqueKey=@ukey";
+                    ds.SelectCommand = "SELECT Username, Email from StripeEvents WHERE UserHash=@uid AND Username=@uname AND StripePaymentLinkId=@plink AND UniqueKey=@ukey";
                     DataView dv = ds.Select(DataSourceSelectArguments.Empty) as DataView;
                     DataTable dt = dv.ToTable();
                     Debug.WriteLine(dt.Rows.Count);
                     if (dt.Rows.Count > 0)
                     {
-                        return true;
+                        string email = dt.Rows[0]["Email"].ToString();
+                        return email;
                     }
                     else
                     {
-                        return false;
+                        return string.Empty;
                     }
                 }
                 else
                 {
-                    return false;
+                    return string.Empty;
                 }
             }
             catch (Exception ex)
@@ -679,7 +767,7 @@ namespace BossTime
                 Debug.WriteLine(ex.ToString());
             }
 
-            return false;
+            return string.Empty;
         }
 
 
@@ -952,6 +1040,28 @@ namespace BossTime
             APIHandler api = new APIHandler();
             Coins = api.GetCoins(ld);
             AccountHash = api.HashPass(ld.Username, ld.ID);
+        }
+
+
+
+    }
+
+    public class EmailAuthentication
+    {
+        public string Email { get; set; }
+        public string Username { get; set; }
+        public string Randomizer { get; set; } = Guid.NewGuid().ToString();
+
+        public EmailAuthentication(string email, string username)
+        {
+            Email = email;
+            Username = username;
+        }
+
+        public override string ToString()
+        {
+            string code = JsonConvert.SerializeObject(this);
+            return code;
         }
 
     }

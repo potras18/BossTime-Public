@@ -41,6 +41,29 @@ namespace BossTime
         //Maximum length 32 characters
         public static string EncryptionKey = "BossTimeEncryptionKey2025!";
 
+        public static bool RequireEmailAccountActivation = true;
+
+        //Set your base URL here, used for email links and redirects.
+        public static string BaseURL = "https://YOURURL/";
+
+        public static string ServerName = "YOUR PT SERVER NAME eg. AwesomePT";
+
+        // Email Variables
+        // These variables are used for sending emails from the system.
+        // Be sure to set the EmailAddress, EmailPassword, EmailSMTP, and EmailPort to your actual email settings.
+        public static string EmailAddress = "YOUR EMAIL ADDRESS";
+
+        public static string EmailPassword = "YOUR EMAIL PASSWORD";
+
+        // Common SMTP servers are smtp.yoursite.com or mail.yoursite.com. Check with your email provider if unsure.
+        public static string EmailSMTP = "smtp.yoursite.com";
+
+        // Common ports are 25, 465, and 587. Check with your email provider if unsure.
+        public static int EmailPort = 587;
+
+        // Set to true if your SMTP server requires TLS/SSL.
+        public static bool EmailTLS = true;
+
 
         //Set your Initialization vector here, or modify your database to contain a specific vector for each user for increased security.
         // The system is designed to include a datetime with login data, with each login, which will randomize the data regardless, making the IV slightly pointless.
