@@ -11,7 +11,18 @@ namespace BossTime
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            try
+            {
+                string usern = Request.QueryString["username"];
+                if(!string.IsNullOrEmpty(usern))
+                {
+                    tbUsername.Text = usern;
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore errors
+            }
         }
 
 
