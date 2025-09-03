@@ -431,18 +431,29 @@ namespace BossTime
         {
 
 
-      
+            try
+            {
 
-           
+                GenerateList(min, max);
 
-            GenerateList(min, max);
-            
+                if (BossesRemain > 0)
+                {
+                    dlMain.DataSource = bossTimes;
+                    //DataListItem dli = new DataListItem(1, ListItemType.Item);
 
-            dlMain.DataSource = bossTimes;
-            DataListItem dli = new DataListItem(1, ListItemType.Item);
-       
-            dlMain.DataBind();
+                    dlMain.DataBind();
+                }
+                else
+                {
+                    hdStatus.InnerText = "No More Bosses!";
+                    lblStatus.Text = "There are no more bosses today!";
+                    ScriptManager.RegisterStartupScript(dlMain, typeof(string), "ShowShroud", "ShowShroud();", true);
+                }
+            }
+            catch (Exception)
+            {
 
+            }
 
 
         }
@@ -552,6 +563,7 @@ namespace BossTime
 
             return ret;
         }
+        int BossesRemain = 0;
         // Generate the list of bosses and their visibility based on level range and current time
         private void GenerateList(int min=0, int max=120)
         {
@@ -605,6 +617,7 @@ namespace BossTime
                     if (bvis && DateTime.UtcNow.AddHours(utcoffset).Hour <= i)
                     {
                         bossTimes[i].isVisible = true;
+                        BossesRemain++;
                     }
 
                     
@@ -630,8 +643,15 @@ namespace BossTime
         // Handle DataList item selection to focus on the selected hour
         protected void dlMain_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Label lbl =  dlMain.SelectedItem.FindControl("lblHour") as Label;
-            lbl.Focus();
+            try
+            {
+                Label lbl = dlMain.SelectedItem.FindControl("lblHour") as Label;
+                lbl.Focus();
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         // Placeholder for logo click event, currently does nothing

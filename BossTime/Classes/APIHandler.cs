@@ -296,7 +296,7 @@ namespace BossTime
                     ds.InsertParameters.Add("pass", finalpass);
                     ds.InsertParameters.Add("dbdate", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
                     ds.InsertParameters.Add("coins", RegisterVariables.NewAccountStartingCoins.ToString());
-                    int PreActivation = 1;
+                    int PreActivation = 98;
                     if(SystemVariables.RequireEmailAccountActivation)
                     {
                         PreActivation = 0;
@@ -306,7 +306,7 @@ namespace BossTime
 
 
 
-                    ds.InsertCommand = "INSERT INTO UserInfo (AccountName, Password, Email, RegisDay, Active,Coins,GameMasterType,GameMasterLevel,GameMasterMacAddress,CoinsTraded,BanStatus,IsMuted,MuteCount,ActiveCode) VALUES (@acc, @pass, @email, @dbdate,@preauth,@coins,0,0,'',0,0,0,0,1);";
+                    ds.InsertCommand = "INSERT INTO UserInfo (AccountName, Password, Email, RegisDay, Flag,Coins,GameMasterType,GameMasterLevel,GameMasterMacAddress,CoinsTraded,BanStatus,IsMuted,MuteCount,ActiveCode,Active) VALUES (@acc, @pass, @email, @dbdate,@preauth,@coins,0,0,'',0,0,0,0,1,0);";
                     ds.Inserted += new SqlDataSourceStatusEventHandler((snd, e) => {
 
                        foreach(DbParameter pr in e.Command.Parameters)
@@ -362,13 +362,13 @@ namespace BossTime
                 ds.SelectParameters.Add("acc", username);
                 ds.SelectParameters.Add("email", email);
                 ds.ConnectionString = $"Data Source={DBCredentials.server}  ;Initial Catalog=UserDB;User ID=  {DBCredentials.dbID}  ;Password=  {DBCredentials.dbPass}";
-                ds.SelectCommand = "SELECT AccountName from UserInfo WHERE AccountName=@acc AND Email=@email AND Active=0";
+                ds.SelectCommand = "SELECT AccountName from UserInfo WHERE AccountName=@acc AND Email=@email AND Flag=0";
                 DataView dv = ds.Select(DataSourceSelectArguments.Empty) as DataView;
                 DataTable dt = dv.ToTable();
                 if (dt.Rows.Count == 0)
                 {
                     Debug.WriteLine("ROWS 0");
-                    // Username or email already exists
+                    
                     response.Success = false;
                     response.Message = "Account not found or already activated.";
                     return response;
@@ -378,9 +378,9 @@ namespace BossTime
                     Debug.WriteLine("ROWS NOT 0");
                     ds.UpdateParameters.Clear();
                     // Add parameters for update
-                    ds.UpdateParameters.Add("active", "1");
+                    ds.UpdateParameters.Add("active", "98");
                     ds.UpdateParameters.Add("acc", username);
-                    ds.UpdateCommand = "UPDATE UserInfo SET Active=@active WHERE AccountName=@acc;";
+                    ds.UpdateCommand = "UPDATE UserInfo SET Flag=@active WHERE AccountName=@acc;";
                     ds.Updated += new SqlDataSourceStatusEventHandler((snd, e) =>
                     {
                         foreach (DbParameter pr in e.Command.Parameters)
@@ -444,7 +444,7 @@ namespace BossTime
                 Debug.WriteLine(hp);
                 ds.SelectParameters.Add("pass", hp);
                 ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
-                ds.SelectCommand = "SELECT AccountName,ID,BanStatus from UserInfo WHERE AccountName=@acc AND Password=@pass";
+                ds.SelectCommand = "SELECT AccountName,ID,BanStatus,Flag from UserInfo WHERE AccountName=@acc AND Password=@pass";
                 DataView dv = ds.Select(DataSourceSelectArguments.Empty) as DataView;
                 DataTable dt = dv.ToTable();
                 Debug.WriteLine(dt.Rows.Count);
@@ -457,6 +457,16 @@ namespace BossTime
                         {
                             response.Success = false;
                             response.Message = "Account is banned.";
+                            return response;
+                        }
+                    }
+
+                    if (dt.Rows[0]["Flag"] != null && int.TryParse(dt.Rows[0]["Flag"].ToString(), out int flag))
+                    {
+                        if (flag < 98)
+                        {
+                            response.Success = false;
+                            response.Message = "Account is not activated.";
                             return response;
                         }
                     }
@@ -928,7 +938,7 @@ namespace BossTime
                 foreach(byte b in bytes)
                 {
                     // Convert each byte to a hexadecimal string
-                    sb.Append(Convert.ToString(b,16).ToUpper());
+                    sb.Append(Convert.ToString(b,16).PadLeft(2,'0').ToUpper());
                 }
 
                 return sb.ToString();

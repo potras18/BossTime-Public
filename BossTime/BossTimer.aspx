@@ -7,6 +7,7 @@
     <title>Priston Tale - Boss Timer</title>
     <script src="Scripts/Main.js?1=13422" type="text/javascript"></script>
     <script src="Scripts/Synth.js?1=1" type="text/javascript"></script>
+    <script src="Scripts/Register.js?1=1" type="text/javascript"></script>
     <link rel="stylesheet" href="style/main.css?1=2022" />
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico?1=1"/>
     </head>
@@ -97,7 +98,16 @@
                     </tr>
                 </table>
                 To hear audio notfications for boss spawns, please enable speaker permissions for this website in your browser settings.</div>
+                    <div class="UIShroud Hidden" id="divShroud">
+            <div class="RegBox SuperFront">
+                <h1 runat="server" id="hdStatus">BossTimer!</h1>
+                <asp:Label ID="lblStatus" Text="" runat="server" Width="100%" />
+                <br />
+                <br />
+                <button type="button" class="btnReg" onclick="HideParent(this.parentElement);">OK</button>
 
+            </div>
+        </div>
             </ContentTemplate>
             <Triggers>
                 <asp:AsyncPostBackTrigger ControlID="tmrMain" EventName="Tick" />

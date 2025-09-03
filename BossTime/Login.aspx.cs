@@ -17,12 +17,26 @@ namespace BossTime
                 if(!string.IsNullOrEmpty(usern))
                 {
                     tbUsername.Text = usern;
+
+                    string isact = Request.QueryString["act"] ?? "0";
+
+                    if (isact == "1")
+                    {
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "Shroud", "ShowShroud();", true);
+
+                        hdStatus.InnerText = "Welcome Onboard!";
+                        lblStatus.Text = $"Welcome {usern}, your account is now active!";
+                    }
+
                 }
             }
             catch (Exception)
             {
                 // Ignore errors
             }
+
+            
+
         }
 
 

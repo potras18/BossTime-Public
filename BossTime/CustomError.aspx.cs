@@ -14,6 +14,20 @@ namespace BossTime
             ScriptManager.RegisterStartupScript(this, this.GetType(), "Shroud", "ShowShroud();", true);
             hdStatus.InnerText = "Error!";
             lblStatus.Text = "There was an error with the page you were trying to view.";
+
+            try
+            {
+                string sessionerror = Session["ErrorData"].ToString();
+                if (!string.IsNullOrEmpty(sessionerror))
+                {
+                    lblStatus.Text = sessionerror;
+                }
+            }
+            catch (Exception)
+            {
+                // No session error
+            }
+
         }
 
         protected void btnReturn_Click(object sender, EventArgs e)

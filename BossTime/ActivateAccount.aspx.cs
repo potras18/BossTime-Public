@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -12,38 +14,50 @@ namespace BossTime
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
-            string requestCode = (Request.QueryString["AuthCode"] != null) ? Request.QueryString["AuthCode"] : "";
-
-            if (string.IsNullOrEmpty(requestCode) || !SystemVariables.RequireEmailAccountActivation)
+            try
             {
-                Response.Redirect("Login.aspx");
-            }
-            else
-            {
-                try
+                string requestCode = (Request.QueryString["AuthCode"] != null) ? Request.QueryString["AuthCode"] : "";
+
+                if (string.IsNullOrEmpty(requestCode) || !SystemVariables.RequireEmailAccountActivation)
                 {
-                    string decodedauth = APIHandler.Decrypt(requestCode);
-                    EmailAuthentication auth = JsonConvert.DeserializeObject<EmailAuthentication>(decodedauth);
-                    APIHandler api = new APIHandler();
-                    APIResponse resp = api.ActivateAccount(auth.Username,auth.Email);
+                    Response.Redirect("Login.aspx");
+                }
+                else
+                {
+                    try
+                    {
+                        string decodedauth = APIHandler.Decrypt(Uri.UnescapeDataString(requestCode));
+                        
+                        EmailAuthentication auth = JsonConvert.DeserializeObject<EmailAuthentication>(decodedauth);
+                        APIHandler api = new APIHandler();
+                        APIResponse resp = api.ActivateAccount(auth.Username, auth.Email);
 
-                    if (resp.Success)
-                    {
-                        Response.Write($"Activated Account for {auth.Username}");
-                        Response.Redirect($"Login.aspx?username={auth.Username}&act=1");
+                        if (resp.Success)
+                        {
+                            Response.Write($"Activated Account for {auth.Username}");
+                            Response.Redirect($"Login.aspx?username={auth.Username}&act=1");
+                        }
+                        else
+                        {
+                            Session["ErrorData"] = ($"Failed to Activate Account for {auth.Username}: {resp.Message}");
+                            Response.Redirect("CustomError.aspx");
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Response.Write($"Failed to Activate Account for {auth.Username}: {resp.Message}: {resp.Data}");
+                        if (ex.GetType() != typeof(ThreadAbortException))
+                        {
+                            //Debug.WriteLine(ex.ToString());
+                        
+                        Session["ErrorData"] = ("Error Activating Account.");
                         Response.Redirect("CustomError.aspx");
+
+                        }
                     }
                 }
-                catch (Exception)
-                {
-                    Response.Write("Error Activating Account.");
-                    Response.Redirect("CustomError.aspx");
-                }
+            }catch(Exception ex)
+            {
+                //Debug.WriteLine(ex.ToString());
             }
 
         }
