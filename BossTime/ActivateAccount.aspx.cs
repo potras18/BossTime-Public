@@ -31,7 +31,7 @@ namespace BossTime
                     if (resp.Success)
                     {
                         Response.Write($"Activated Account for {auth.Username}");
-                        Response.Redirect("Login.aspx?username={usern}&act=1");
+                        Response.Redirect($"Login.aspx?username={auth.Username}&act=1");
                     }
                     else
                     {
