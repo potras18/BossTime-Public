@@ -928,7 +928,7 @@ namespace BossTime
                 foreach(byte b in bytes)
                 {
                     // Convert each byte to a hexadecimal string
-                    sb.Append(Convert.ToString(b,16).ToUpper());
+                    sb.Append(Convert.ToString(b,16).PadLeft(2,'0').ToUpper());
                 }
 
                 return sb.ToString();
