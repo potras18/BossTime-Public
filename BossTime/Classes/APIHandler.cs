@@ -444,7 +444,7 @@ namespace BossTime
                 Debug.WriteLine(hp);
                 ds.SelectParameters.Add("pass", hp);
                 ds.ConnectionString = $"Data Source={DBCredentials.server};Initial Catalog=UserDB;User ID={DBCredentials.dbID};Password={DBCredentials.dbPass}";
-                ds.SelectCommand = "SELECT AccountName,ID,BanStatus from UserInfo WHERE AccountName=@acc AND Password=@pass";
+                ds.SelectCommand = "SELECT AccountName,ID,BanStatus,Flag from UserInfo WHERE AccountName=@acc AND Password=@pass";
                 DataView dv = ds.Select(DataSourceSelectArguments.Empty) as DataView;
                 DataTable dt = dv.ToTable();
                 Debug.WriteLine(dt.Rows.Count);
@@ -457,6 +457,16 @@ namespace BossTime
                         {
                             response.Success = false;
                             response.Message = "Account is banned.";
+                            return response;
+                        }
+                    }
+
+                    if (dt.Rows[0]["Flag"] != null && int.TryParse(dt.Rows[0]["Flag"].ToString(), out int flag))
+                    {
+                        if (flag < 98)
+                        {
+                            response.Success = false;
+                            response.Message = "Account is not activated.";
                             return response;
                         }
                     }
